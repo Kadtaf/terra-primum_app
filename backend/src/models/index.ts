@@ -17,6 +17,7 @@ export class User extends Model {
   declare totalOrders: number;
   declare createdAt: Date;
   declare updatedAt: Date;
+  declare isActive: boolean;
 }
 
 User.init(
@@ -59,6 +60,12 @@ User.init(
       type: DataTypes.INTEGER,
       defaultValue: 0,
     },
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
+      field: 'isactive',
+    },
   },
   {
     sequelize,
@@ -77,7 +84,7 @@ export class Product extends Model {
   declare image?: string;
   declare ingredients: string[];
   declare allergens: string[];
-  declare available: boolean;
+  declare isAvailable: boolean;
   declare createdAt: Date;
   declare updatedAt: Date;
 }
@@ -86,6 +93,7 @@ Product.init(
   {
     id: {
       type: DataTypes.STRING,
+      defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
     name: {
@@ -98,6 +106,10 @@ Product.init(
     },
     price: {
       type: DataTypes.DECIMAL(10, 2),
+      get() {
+        const rawValue = this.getDataValue('price');
+        return rawValue ? parseFloat(rawValue) : null;
+      },
       allowNull: false,
     },
     category: {
@@ -292,10 +304,14 @@ LoyaltyTransaction.init(
 // RestaurantSettings Model
 export class RestaurantSettings extends Model {
   declare id: string;
-  declare openingHours: object;
-  declare closedDays: string[];
+
+  declare openingHours: {
+    [day: string]: { open: string; close: string } | null;
+  };
+
   declare deliveryFee: number;
   declare minOrderAmount: number;
+  
   declare createdAt: Date;
   declare updatedAt: Date;
 }
@@ -318,10 +334,6 @@ RestaurantSettings.init(
         saturday: { open: '12:00', close: '23:00' },
         sunday: { open: '12:00', close: '22:00' },
       },
-    },
-    closedDays: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
-      defaultValue: [],
     },
     deliveryFee: {
       type: DataTypes.DECIMAL(10, 2),

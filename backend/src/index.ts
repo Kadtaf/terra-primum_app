@@ -12,7 +12,10 @@ import orderRoutes from './routes/orders';
 import loyaltyRoutes from './routes/loyalty';
 import adminRoutes from './routes/admin';
 import { errorHandler } from './middleware/errorHandler';
-
+import adminStatsRoutes from './routes/adminStatsRoutes';
+import categoryRoutes from './routes/categories';
+import adminCategoryRoutes from './routes/adminCategories';
+import publicRoutes from './routes/public';
 
 dotenv.config();
 
@@ -20,7 +23,7 @@ const app: Express = express();
 const httpServer = createServer(app);
 const io = new SocketIOServer(httpServer, {
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: process.env.FRONTEND_URL || 'http://localhost:5175',
     methods: ['GET', 'POST'],
   },
 });
@@ -29,17 +32,19 @@ const io = new SocketIOServer(httpServer, {
 // Middleware de sécurité
 app.use(helmet());
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: process.env.FRONTEND_URL || 'http://localhost:5175',
   credentials: true,
 }));
 
 
 // Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limite à 100 requêtes par fenêtre
-});
-app.use(limiter);
+if (process.env.NODE_ENV === "production") {
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+  });
+  app.use(limiter);
+}
 
 // Body parser
 app.use(express.json({ limit: '10mb' }));
@@ -51,6 +56,13 @@ app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/loyalty', loyaltyRoutes);
 app.use('/api/admin', adminRoutes); 
+app.use('/api/admin/stats', adminStatsRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/admin/categories", adminCategoryRoutes);
+app.use("/api/public", publicRoutes);
+
+
+
 
 
 

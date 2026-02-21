@@ -1,13 +1,18 @@
 import express, { Router, Request, Response } from 'express';
 import { Order, OrderItem, Product, User, RestaurantSettings } from '../models/index.ts';
-import { isAdmin } from '../middleware/auth.ts';
+import { authenticate,isAdmin } from '../middleware/auth.ts';
 import { io } from '../index.ts';
 import { Op } from 'sequelize';
+import {
+  getAllUsers,
+  updateUserRole,
+  toggleUserStatus
+} from '../controllers/adminUserController';
 
 const router: Router = express.Router();
 
 // Obtenir toutes les commandes
-router.get('/orders', isAdmin, async (req: Request, res: Response) => {
+router.get('/orders', authenticate, isAdmin, async (req: Request, res: Response) => {
   try {
     const { status, limit = 50, offset = 0 } = req.query;
     const where: any = {};
@@ -42,7 +47,7 @@ router.get('/orders', isAdmin, async (req: Request, res: Response) => {
 });
 
 // Mettre à jour le statut d'une commande
-router.put('/orders/:id/status', isAdmin, async (req: Request, res: Response) => {
+router.put('/orders/:id/status', authenticate, isAdmin, async (req: Request, res: Response) => {
   try {
     const { status } = req.body;
     const order = await Order.findByPk(req.params.id);
@@ -71,7 +76,7 @@ router.put('/orders/:id/status', isAdmin, async (req: Request, res: Response) =>
 });
 
 // Obtenir les statistiques de ventes
-router.get('/reports/sales', isAdmin, async (req: Request, res: Response) => {
+router.get('/reports/sales', authenticate, isAdmin, async (req: Request, res: Response) => {
   try {
     const { startDate, endDate } = req.query;
     const where: any = { status: 'delivered' };
@@ -104,7 +109,7 @@ router.get('/reports/sales', isAdmin, async (req: Request, res: Response) => {
 });
 
 // Obtenir les produits les plus vendus
-router.get('/reports/top-products', isAdmin, async (req: Request, res: Response) => {
+router.get('/reports/top-products', authenticate, isAdmin, async (req: Request, res: Response) => {
   try {
     const topProducts = await OrderItem.findAll({
       attributes: ['productId', [require('sequelize').fn('SUM', require('sequelize').col('quantity')), 'totalQuantity']],
@@ -123,7 +128,7 @@ router.get('/reports/top-products', isAdmin, async (req: Request, res: Response)
 });
 
 // Obtenir les paramètres du restaurant
-router.get('/settings', isAdmin, async (req: Request, res: Response) => {
+router.get('/settings', authenticate, isAdmin, async (req: Request, res: Response) => {
   try {
     let settings = await RestaurantSettings.findOne();
 
@@ -139,20 +144,21 @@ router.get('/settings', isAdmin, async (req: Request, res: Response) => {
 });
 
 // Mettre à jour les paramètres du restaurant
-router.put('/settings', isAdmin, async (req: Request, res: Response) => {
+router.put('/settings', authenticate, isAdmin, async (req: Request, res: Response) => {
   try {
     let settings = await RestaurantSettings.findOne();
 
-    if (!settings) {
-      settings = await RestaurantSettings.create(req.body);
-    } else {
-      await settings.update(req.body);
-    }
+    const openingHours = req.body.openingHours || {};
+
+    await settings!.update({
+      openingHours
+    });
 
     res.json({
       message: 'Paramètres mis à jour',
       settings,
     });
+
   } catch (error) {
     console.error('Erreur mise à jour paramètres:', error);
     res.status(500).json({ error: 'Erreur lors de la mise à jour des paramètres' });
@@ -164,7 +170,7 @@ router.put('/settings', isAdmin, async (req: Request, res: Response) => {
 // -----------------------------
 
 // Obtenir tous les produits
-router.get('/products', isAdmin, async (req: Request, res: Response) => {
+router.get('/products', authenticate, isAdmin, async (req: Request, res: Response) => {
   try {
     const products = await Product.findAll({
       order: [['createdAt', 'DESC']],
@@ -178,7 +184,7 @@ router.get('/products', isAdmin, async (req: Request, res: Response) => {
 });
 
 // Ajouter un produit
-router.post('/products', isAdmin, async (req: Request, res: Response) => {
+router.post('/products', authenticate, isAdmin, async (req: Request, res: Response) => {
   try {
     const product = await Product.create(req.body);
 
@@ -190,7 +196,7 @@ router.post('/products', isAdmin, async (req: Request, res: Response) => {
 });
 
 // Mettre à jour un produit
-router.put('/products/:id', isAdmin, async (req: Request, res: Response) => {
+router.put('/products/:id', authenticate, isAdmin, async (req: Request, res: Response) => {
   try {
     const product = await Product.findByPk(req.params.id);
 
@@ -208,7 +214,7 @@ router.put('/products/:id', isAdmin, async (req: Request, res: Response) => {
 });
 
 // Supprimer un produit
-router.delete('/products/:id', isAdmin, async (req: Request, res: Response) => {
+router.delete('/products/:id', authenticate, isAdmin, async (req: Request, res: Response) => {
   try {
     const product = await Product.findByPk(req.params.id);
 
@@ -224,5 +230,55 @@ router.delete('/products/:id', isAdmin, async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Erreur lors de la suppression du produit' });
   }
 });
+
+// Réinitialiser les paramètres du restaurant aux valeurs par défaut
+router.post('/settings/reset', authenticate, isAdmin, async (req, res) => {
+  try {
+    const defaultSettings = {
+      openingHours: {
+        monday: { open: '11:00', close: '22:00' },
+        tuesday: { open: '11:00', close: '22:00' },
+        wednesday: { open: '11:00', close: '22:00' },
+        thursday: { open: '11:00', close: '22:00' },
+        friday: { open: '11:00', close: '23:00' },
+        saturday: { open: '12:00', close: '23:00' },
+        sunday: { open: '12:00', close: '22:00' },
+      },
+      closedDays: [],
+      deliveryFee: 2.50,
+      minOrderAmount: 15.00,
+    };
+
+    let settings = await RestaurantSettings.findOne();
+
+    if (!settings) {
+      settings = await RestaurantSettings.create(defaultSettings);
+    } else {
+      await settings.update(defaultSettings);
+    }
+
+    res.json({
+      message: "Paramètres réinitialisés",
+      settings,
+    });
+
+  } catch (error) {
+    console.error("Erreur réinitialisation paramètres:", error);
+    res.status(500).json({ error: "Erreur lors de la réinitialisation" });
+  }
+});
+
+// Obtenir tous les utilisateurs
+router.get('/users', authenticate, isAdmin, getAllUsers);
+
+
+// Modifier le rôle d'un utilisateur
+router.put('/users/:id/role', authenticate, isAdmin, updateUserRole);
+
+
+// Activer / désactiver un utilisateur
+router.put('/users/:id/toggle-status', authenticate, isAdmin, toggleUserStatus);
+
+
 
 export default router;

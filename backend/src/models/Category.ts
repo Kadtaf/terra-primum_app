@@ -5,6 +5,7 @@ import { sequelize } from '../config/database';
  * Modèle Category
  * Représente une catégorie du menu (ex: Burgers, Sandwichs, Salades)
  */
+
 export class Category extends Model {
   declare id: string;
   declare name: string;
@@ -14,7 +15,8 @@ export class Category extends Model {
 Category.init(
   {
     id: {
-      type: DataTypes.STRING,
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,   // OBLIGATOIRE
       primaryKey: true,
     },
     name: {

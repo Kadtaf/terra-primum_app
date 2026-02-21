@@ -1,8 +1,10 @@
 import express, { Router, Request, Response } from 'express';
-import { Product } from '../models/index.js';
+import { Product } from '../models/index.ts';
 import { isAdmin } from '../middleware/auth.ts';
+import { Op } from 'sequelize';
 
 const router: Router = express.Router();
+
 
 // Lister tous les produits
 router.get('/', async (req: Request, res: Response) => {
@@ -36,6 +38,53 @@ router.get('/categories/list', async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Erreur récupération catégories:', error);
     res.status(500).json({ error: 'Erreur lors de la récupération des catégories' });
+  }
+});
+
+// Pagination PRO
+router.get('/paginated', async (req: Request, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const pageSize = parseInt(req.query.pageSize as string) || 12;
+
+    const category = req.query.category as string | undefined;
+    const search = req.query.search as string | undefined;
+
+    const where: any = { available: true };
+
+    // Filtre catégorie
+    if (category) {
+      where.category = category;
+    }
+
+    // Filtre recherche
+    if (search) {
+      where[Symbol.for('or')] = [
+        { name: { [Op.iLike]: `%${search}%` } },
+        { description: { [Op.iLike]: `%${search}%` } },
+      ];
+    }
+
+    // Total avant pagination
+    const total = await Product.count({ where });
+
+    // Produits paginés
+    const items = await Product.findAll({
+      where,
+      order: [['createdAt', 'DESC']],
+      offset: (page - 1) * pageSize,
+      limit: pageSize,
+    });
+
+    res.json({
+      items,
+      total,
+      page,
+      pageSize,
+    });
+  } catch (error) {
+    console.error('Erreur pagination produits:', error);
+    res.status(500).json({ error: 'Erreur lors de la pagination des produits' });
   }
 });
 
