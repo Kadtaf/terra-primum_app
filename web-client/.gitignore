@@ -19,6 +19,7 @@ build/
 .env
 .env.local
 .env.*.local
+.env*
 
 # Editor directories and files
 .vscode/*
@@ -41,3 +42,11 @@ web-client/.env
 web-client/.env.local
 web-client/.env.*.local
 web-client/.gitignore
+
+backend/node_modules/
+backend/dist/
+backend/.env
+backend/.env.local
+backend/.env.*.local
+backend/.gitignore
+backend/.vscode/*
