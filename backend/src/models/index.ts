@@ -6,6 +6,7 @@ import PurchaseInvoice from "./PurchaseInvoice";
 import PurchaseInvoiceLine from "./PurchaseInvoiceLine";
 import Supplier from './supplier';
 import StockItem from './StockItem';
+import Ingredient from './Ingredient';
 
 
 // User Model
@@ -400,9 +401,10 @@ PurchaseInvoiceLine.belongsTo(PurchaseInvoice, {
   as: "invoice",
 });
 
+// Relation historique (stock par produit) — à déprécier
 Product.hasOne(StockItem, {
     foreignKey: "productId",
-    as: "stock",
+    as: "productStock",
 });
 StockItem.belongsTo(Product, {
     foreignKey: "productId",
@@ -418,6 +420,27 @@ PurchaseInvoiceLine.belongsTo(Product, {
   as: "product",
 });
 
+// Nouvelle relation (stock par ingrédient)
+Ingredient.hasOne(StockItem, {
+  foreignKey: "ingredientId",
+  as: "stock",
+});
+StockItem.belongsTo(Ingredient, {
+  foreignKey: "ingredientId",
+  as: "ingredientData",
+});
+
+// Une ligne de facture d’achat concerne un ingrédient
+Ingredient.hasMany(PurchaseInvoiceLine, {
+  foreignKey: "ingredientId",
+  as: "purchaseLines",
+});
+PurchaseInvoiceLine.belongsTo(Ingredient, {
+  foreignKey: "ingredientId",
+  as: "ingredient",
+});
+
+
 export default {
   User,
   Product,
@@ -431,4 +454,5 @@ export default {
   PurchaseInvoiceLine,
   Supplier,
   StockItem,
+  Ingredient,
 };

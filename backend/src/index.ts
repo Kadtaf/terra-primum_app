@@ -68,10 +68,6 @@ app.use("/uploads", express.static("uploads"));
 app.use("/api/stock", stockRoutes);
 
 
-
-
-
-
 // Health check
 app.get('/health', (req: Request, res: Response) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });

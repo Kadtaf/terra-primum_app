@@ -41,3 +41,41 @@ export async function applyInvoiceToStock(invoiceId: string) {
         }
     });
 }
+
+
+
+export async function applyInvoiceToStockByIngredient(invoiceId: string) {
+    return await sequelize.transaction(async (t: Transaction) => {
+        const lines = await PurchaseInvoiceLine.findAll({
+        where: {
+            invoiceId,
+            ingredientId: { [Op.ne]: null },
+        },
+        transaction: t,
+        });
+
+        for (const line of lines as any[]) {
+        const ingredientId = line.ingredientId as string;
+        const qty = Number(line.quantity);
+
+        // Récupérer ou créer la ligne de stock pour cet ingrédient
+        const [stock, created] = await StockItem.findOrCreate({
+            where: { ingredientId },
+            defaults: {
+            ingredientId,
+            quantity: qty,
+            reorderThreshold: null,
+            },
+            transaction: t,
+        });
+
+        if (!created) {
+            const currentQty = Number(stock.quantity);
+            const newQty = currentQty + qty;
+
+            await stock.update({ quantity: newQty }, { transaction: t });
+        }
+        }
+    });
+}
+

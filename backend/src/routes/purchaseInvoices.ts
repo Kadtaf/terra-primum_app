@@ -13,6 +13,7 @@ import { parseOcrInvoice } from "../utils/parseOcrInvoice";
 import { detectSupplierFromOcr } from "../utils/detectSupplierFormOcr";
 import { Op } from "sequelize";
 import { applyInvoiceToStock } from "../services/stockService";
+import { applyInvoiceToStockByIngredient } from "../services/stockService";
 
 
 
@@ -485,7 +486,22 @@ router.post("/:id/apply-stock", async (req: Request, res: Response) => {
     }
 });
 
+router.post("/:id/apply-to-stock", async (req, res) => {
+    try {
+        const { id } = req.params;
 
+        await applyInvoiceToStockByIngredient(id);
+
+        return res.json({
+        message: "Stock ingrédients mis à jour à partir de la facture.",
+        });
+    } catch (error) {
+        console.error("Erreur lors de l’application facture → stock :", error);
+        return res
+        .status(500)
+        .json({ message: "Erreur lors de la mise à jour du stock." });
+    }
+});
 
 
 
