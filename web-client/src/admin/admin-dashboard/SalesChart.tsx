@@ -66,7 +66,7 @@ export default function SalesChart({ data }: { data: SalesData[] }) {
 
     return (
         <div className="bg-white p-6 rounded-lg shadow">
-        <h2 className="text-xl font-bold mb-4">Ventes par jour</h2>
+        <h2 className="text-xl font-bold mb-4 text-black dark:text-white">Ventes par jour</h2>
         <Line data={chartData} options={options} />
         </div>
     );

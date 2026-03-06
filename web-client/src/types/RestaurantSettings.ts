@@ -1,4 +1,4 @@
-import { OpeningHours } from './openihngHours';
+import { OpeningHours } from "./openingHours";
 export interface RestaurantSettings {
     id: string;
     openingHours: OpeningHours;

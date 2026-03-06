@@ -2,6 +2,10 @@ import { DataTypes, Model } from 'sequelize';
 import { sequelize } from '../config/database';
 import Category from './Category';
 import Restaurant from './Restaurant';
+import PurchaseInvoice from "./PurchaseInvoice";
+import PurchaseInvoiceLine from "./PurchaseInvoiceLine";
+import Supplier from './supplier';
+import StockItem from './StockItem';
 
 
 // User Model
@@ -84,7 +88,7 @@ export class Product extends Model {
   declare image?: string;
   declare ingredients: string[];
   declare allergens: string[];
-  declare isAvailable: boolean;
+  declare available: boolean;
   declare createdAt: Date;
   declare updatedAt: Date;
 }
@@ -364,8 +368,55 @@ OrderItem.belongsTo(Product, { foreignKey: 'productId', as: 'product' });
 User.hasMany(LoyaltyTransaction, { foreignKey: 'userId', as: 'loyaltyTransactions' });
 LoyaltyTransaction.belongsTo(User, { foreignKey: 'userId' });
 
-Category.hasMany(Product, { foreignKey: 'category' });
-Product.belongsTo(Category, { foreignKey: 'category' });
+Category.hasMany(Product, {
+  foreignKey: "category",
+  sourceKey: "id",
+  as: "products",
+});
+
+Product.belongsTo(Category, {
+  foreignKey: "category",
+  targetKey: "id",
+  as: "categoryDetails",
+});
+
+Supplier.hasMany(PurchaseInvoice, {
+  foreignKey: "supplierId",
+  as: "invoices",
+});
+
+PurchaseInvoice.belongsTo(Supplier, {
+  foreignKey: "supplierId",
+  as: "supplier",
+});
+
+PurchaseInvoice.hasMany(PurchaseInvoiceLine, {
+  foreignKey: "invoiceId",
+  as: "lines",
+});
+
+PurchaseInvoiceLine.belongsTo(PurchaseInvoice, {
+  foreignKey: "invoiceId",
+  as: "invoice",
+});
+
+Product.hasOne(StockItem, {
+    foreignKey: "productId",
+    as: "stock",
+});
+StockItem.belongsTo(Product, {
+    foreignKey: "productId",
+    as: "product",
+});
+
+Product.hasMany(PurchaseInvoiceLine, {
+  foreignKey: "productId",
+  as: "purchaseLines",
+});
+PurchaseInvoiceLine.belongsTo(Product, {
+  foreignKey: "productId",
+  as: "product",
+});
 
 export default {
   User,
@@ -376,4 +427,8 @@ export default {
   RestaurantSettings,
   Category,
   Restaurant,
+  PurchaseInvoice,
+  PurchaseInvoiceLine,
+  Supplier,
+  StockItem,
 };

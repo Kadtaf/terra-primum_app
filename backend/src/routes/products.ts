@@ -1,6 +1,6 @@
 import express, { Router, Request, Response } from 'express';
-import { Product } from '../models/index.ts';
-import { isAdmin } from '../middleware/auth.ts';
+import { Product } from '../models/index';
+import { isAdmin } from '../middleware/auth';
 import { Op } from 'sequelize';
 
 const router: Router = express.Router();

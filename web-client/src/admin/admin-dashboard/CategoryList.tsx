@@ -34,7 +34,7 @@ export default function CategoryList({ categories, onEdit, onChange }: Props) {
     };
 
     return (
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white text-black rounded-lg shadow p-4">
         <h2 className="text-xl font-bold mb-4">Catégories</h2>
 
         {error && <p className="text-red-600 mb-2">{error}</p>}

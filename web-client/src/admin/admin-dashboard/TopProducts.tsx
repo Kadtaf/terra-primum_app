@@ -1,8 +1,11 @@
 interface TopProduct {
     productId: string;
-    name: string;
     totalSold: number;
+    product: {
+        name: string;
+    }
 }
+
 // Composant pour afficher les produits les plus vendus
 export default function TopProducts({ data }: { data: TopProduct[] }) {
     if (!data || data.length === 0) {
@@ -16,7 +19,7 @@ export default function TopProducts({ data }: { data: TopProduct[] }) {
 
     return (
         <div className="bg-white p-6 rounded-lg shadow">
-        <h2 className="text-xl font-bold mb-4">Produits les plus vendus</h2>
+        <h2 className="text-xl font-bold mb-4 text-black">Produits les plus vendus</h2>
 
         <ul className="space-y-3">
             {data.map((p, index) => (
@@ -28,7 +31,7 @@ export default function TopProducts({ data }: { data: TopProduct[] }) {
                 <span className="text-sm font-bold text-gray-500 w-6">
                     {index + 1}.
                 </span>
-                <span className="font-medium">{p.name}</span>
+                <span className="font-medium">{p.product?.name || "Produit inconnu"}</span>
                 </div>
 
                 <span className="font-bold text-blue-600">

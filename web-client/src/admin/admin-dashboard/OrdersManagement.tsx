@@ -108,7 +108,7 @@ export default function OrdersManagement() {
       </div>
 
       {/* Tableau */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-white text-black rounded-lg shadow overflow-hidden">
         <table className="w-full">
           <thead className="bg-gray-50 border-b">
             <tr>

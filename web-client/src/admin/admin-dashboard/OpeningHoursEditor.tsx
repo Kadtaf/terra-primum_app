@@ -66,7 +66,7 @@ export default function OpeningHoursEditor({ openingHours, onSave }: Props) {
 
     return (
         <div className="bg-white p-6 rounded-lg shadow space-y-4">
-        <h2 className="text-xl font-bold">Horaires d'ouverture</h2>
+        <h2 className="text-xl font-bold text-black dark:text-white">Horaires d'ouverture</h2>
 
         {error && <p className="text-red-600">{error}</p>}
 
@@ -80,7 +80,7 @@ export default function OpeningHoursEditor({ openingHours, onSave }: Props) {
             className="grid grid-cols-4 gap-4 items-center py-2 border-b border-gray-100"
             >
             {/* Jour */}
-            <span className="font-medium">{label}</span>
+            <span className="font-medium text-black">{label}</span>
 
             {/* Checkbox + label dans le même bloc */}
             <div className="flex items-center gap-2">
@@ -90,7 +90,7 @@ export default function OpeningHoursEditor({ openingHours, onSave }: Props) {
                 onChange={() => toggleClosed(key)}
                 className="h-4 w-4"
                 />
-                <span className="text-sm">Fermé</span>
+                <span className="text-sm text-black">Fermé</span>
             </div>
 
             {/* Heure d'ouverture */}

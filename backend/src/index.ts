@@ -16,6 +16,9 @@ import adminStatsRoutes from './routes/adminStatsRoutes';
 import categoryRoutes from './routes/categories';
 import adminCategoryRoutes from './routes/adminCategories';
 import publicRoutes from './routes/public';
+import purchaseInvoicesRouter from "./routes/purchaseInvoices";
+import stockRoutes from "./routes/stock";
+
 
 dotenv.config();
 
@@ -60,6 +63,9 @@ app.use('/api/admin/stats', adminStatsRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/admin/categories", adminCategoryRoutes);
 app.use("/api/public", publicRoutes);
+app.use("/api/purchase-invoices", purchaseInvoicesRouter);
+app.use("/uploads", express.static("uploads"));
+app.use("/api/stock", stockRoutes);
 
 
 
@@ -115,9 +121,9 @@ async function startServer() {
 
     // Démarrer le serveur
     httpServer.listen(PORT, () => {
-      console.log(`\n🚀 Serveur démarré sur http://localhost:${PORT}`);
-      console.log(`📝 API disponible sur http://localhost:${PORT}/api`);
-      console.log(`💬 Socket.io disponible sur http://localhost:${PORT}`);
+      console.log(`\n Serveur démarré sur http://localhost:${PORT}`);
+      console.log(`API disponible sur http://localhost:${PORT}/api`);
+      console.log(`Socket.io disponible sur http://localhost:${PORT}`);
     });
   } catch (error) {
     console.error('Erreur au démarrage du serveur:', error);

@@ -1,13 +1,15 @@
 import express, { Router, Request, Response } from 'express';
-import { Order, OrderItem, Product, User, RestaurantSettings } from '../models/index.ts';
-import { authenticate,isAdmin } from '../middleware/auth.ts';
-import { io } from '../index.ts';
+import { Order, OrderItem, Product, User, RestaurantSettings } from '../models/index';
+import { authenticate,isAdmin } from '../middleware/auth';
+import { io } from '../index';
 import { Op } from 'sequelize';
 import {
   getAllUsers,
   updateUserRole,
   toggleUserStatus
 } from '../controllers/adminUserController';
+
+import Supplier from '../models/supplier';
 
 const router: Router = express.Router();
 
@@ -267,6 +269,24 @@ router.post('/settings/reset', authenticate, isAdmin, async (req, res) => {
     res.status(500).json({ error: "Erreur lors de la réinitialisation" });
   }
 });
+
+router.get(
+  "/suppliers",
+  /* authenticate, isAdmin, */ async (req, res) => {
+    try {
+      const suppliers = await Supplier.findAll({
+        attributes: ["id", "name"],
+        order: [["name", "ASC"]],
+      });
+      return res.json(suppliers);
+    } catch (error) {
+      console.error("Erreur récupération fournisseurs :", error);
+      return res
+        .status(500)
+        .json({ message: "Erreur lors de la récupération des fournisseurs." });
+    }
+  },
+);
 
 // Obtenir tous les utilisateurs
 router.get('/users', authenticate, isAdmin, getAllUsers);

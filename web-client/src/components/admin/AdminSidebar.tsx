@@ -7,7 +7,10 @@ import {
     Cog6ToothIcon,
     UsersIcon,
     ChartBarIcon,
+    DocumentTextIcon,
 } from "@heroicons/react/24/outline";
+import { BarChart3 } from "lucide-react";
+
 
 export default function AdminSidebar() {
     const base =
@@ -47,14 +50,38 @@ export default function AdminSidebar() {
                 Statistiques
                 </NavLink>
 
+                {/* Nouveau : factures fournisseurs */}
+                <NavLink to="/admin/purchase-invoices" className={linkClass}>
+                    <DocumentTextIcon className="w-5 h-5" />
+                    Factures 
+                </NavLink>
+
+                {/* Si tu veux un accès direct à la création */}
+                <NavLink to="/admin/purchase-invoices/new" className={linkClass}>
+                    <DocumentTextIcon className="w-5 h-5" />
+                    Nouvelle facture
+                </NavLink>
+
+                <NavLink to="/admin/purchase-invoices/price-history" className={linkClass}>
+                    <ChartBarIcon className="w-5 h-5" />
+                    Historique des prix
+                </NavLink>
+
+                <NavLink to="/admin/stock" className={linkClass}>
+                    <BarChart3 className="w-5 h-5 mr-2" />
+                    Stock ingrédients
+                </NavLink>
+
+
+
                 <NavLink to="/admin/settings" className={linkClass}>
-                <Cog6ToothIcon className="w-5 h-5" />
-                Paramètres
+                    <Cog6ToothIcon className="w-5 h-5" />
+                    Paramètres
                 </NavLink>
 
                 <NavLink to="/admin/users" className={linkClass}>
-                <UsersIcon className="w-5 h-5" />
-                Utilisateurs
+                    <UsersIcon className="w-5 h-5" />
+                    Utilisateurs
                 </NavLink>
             </nav>
         </aside>

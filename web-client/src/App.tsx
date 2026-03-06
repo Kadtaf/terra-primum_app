@@ -34,6 +34,12 @@ import UsersManagement from "./admin/admin-dashboard/UsersManagement";
 import RestaurantSettingsManagement from "./admin/admin-dashboard/RestaurantSettingsManagement";
 import CategoriesManagement from "./admin/admin-dashboard/CategoriesManagement";
 import StatsDashboard from "./admin/admin-dashboard/StatsDashboard";
+import PurchaseInvoicesList from "./pages/admin/purchase-invoices/PurchaseInvoicesList";
+import PurchaseInvoiceCreate from "./pages/admin/purchase-invoices/PurchaseInvoiceCreate";
+import PurchaseInvoiceDetail from "./pages/admin/purchase-invoices/PurchaseInvoiceDetail";
+import PurchaseInvoiceOcrCreate from "./pages/admin/purchase-invoices/PurchaseInvoiceOcrCreate";
+import PriceHistoryPage from "./pages/admin/purchase-invoices/PriceHistoryPage";
+import AdminStockPage from "./pages/admin/stock/AdminStockPage";
 
 // Guards
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -140,7 +146,28 @@ function App() {
               element={<RestaurantSettingsManagement />}
             />
             <Route path="/admin/stats" element={<StatsDashboard />} />
+            <Route
+              path="/admin/purchase-invoices"
+              element={<PurchaseInvoicesList />}
+            />
+            <Route
+              path="/admin/purchase-invoices/new"
+              element={<PurchaseInvoiceCreate />}
+            />
+            <Route
+              path="/admin/purchase-invoices/:id"
+              element={<PurchaseInvoiceDetail />}
+            />
           </Route>
+          <Route
+            path="/admin/purchase-invoices/ocr"
+            element={<PurchaseInvoiceOcrCreate />}
+          />
+          <Route
+            path="/admin/purchase-invoices/price-history"
+            element={<PriceHistoryPage />}
+          />
+          <Route path="/admin/stock" element={<AdminStockPage />} />
 
           {/* 404 */}
           <Route path="*" element={<Navigate to="/" />} />

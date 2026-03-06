@@ -60,7 +60,7 @@ export default function UsersManagement() {
         <div className="space-y-6">
         <h1 className="text-3xl font-bold">Gestion des utilisateurs</h1>
 
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-white text-black p-6 rounded-lg shadow">
             <table className="w-full border-collapse">
             <thead>
                 <tr className="text-left border-b bg-gray-50">

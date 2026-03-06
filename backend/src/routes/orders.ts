@@ -1,8 +1,8 @@
 import express, { Router, Request, Response } from 'express';
 import Stripe from 'stripe';
-import { Order, OrderItem, Product, User, LoyaltyTransaction } from '../models/index.ts';
-import { authenticate } from '../middleware/auth.ts';
-import { io } from '../index.ts';
+import { Order, OrderItem, Product, User, LoyaltyTransaction } from '../models/index';
+import { authenticate } from '../middleware/auth';
+import { io } from '../index';
 
 const router: Router = express.Router();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {

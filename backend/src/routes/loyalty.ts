@@ -1,6 +1,6 @@
 import express, { Router, Request, Response } from 'express';
-import { User, LoyaltyTransaction } from '../models/index.ts';
-import { authenticate } from '../middleware/auth.ts';
+import { User, LoyaltyTransaction } from '../models/index';
+import { authenticate } from '../middleware/auth';
 
 const router: Router = express.Router();
 

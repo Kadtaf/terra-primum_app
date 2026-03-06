@@ -131,8 +131,8 @@ export default function ProductForm({ product, onSuccess, onCancel }: Props) {
             >
                 <option value="">Sélectionner une catégorie</option>
                 {categories.map((c) => (
-                <option key={c.id} value={c.name.toLowerCase()}>
-                    {c.name}
+                <option key={c.id} value={c.id}>
+                {c.name}
                 </option>
                 ))}
             </select>

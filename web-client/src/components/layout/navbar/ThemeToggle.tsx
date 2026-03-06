@@ -2,7 +2,7 @@ import { Moon, Sun } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 
 interface Props {
-  mobile?: boolean;
+    mobile?: boolean;
 }
 
 export default function ThemeToggle({ mobile = false }: Props) {

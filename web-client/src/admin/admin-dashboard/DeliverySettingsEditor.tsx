@@ -45,13 +45,13 @@ export default function DeliverySettingsEditor({
 
     return (
         <div className="bg-white p-6 rounded-lg shadow space-y-4">
-        <h2 className="text-xl font-bold">Livraison</h2>
+        <h2 className="text-xl text-black font-bold">Livraison</h2>
 
         {error && <p className="text-red-600">{error}</p>}
 
         <div className="grid grid-cols-2 gap-4">
             <div>
-            <label className="block mb-1 font-medium">Frais de livraison (€)</label>
+            <label className="block mb-1 font-medium text-black">Frais de livraison (€)</label>
             <input
                 type="number"
                 step="0.01"
@@ -62,7 +62,7 @@ export default function DeliverySettingsEditor({
             </div>
 
             <div>
-            <label className="block mb-1 font-medium">Minimum de commande (€)</label>
+            <label className="block mb-1 font-medium text-black">Minimum de commande (€)</label>
             <input
                 type="number"
                 step="0.01"
