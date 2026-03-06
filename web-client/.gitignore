@@ -8,7 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 # Node packages
-node_modules*/
+node_modules/
 
 # Build outputs
 dist/
@@ -35,7 +35,7 @@ build/
 # OS files
 Thumbs.db
 
-web-client/node_modules*/
+web-client/node_modules/
 web-client/dist/
 web-client/build/
 web-client/.env
