@@ -34,22 +34,44 @@ export const updateProductSchema = createProductSchema.partial();
 
 // Order Validators
 export const createOrderSchema = z.object({
-  items: z.array(
-    z.object({
-      productId: z.string().uuid('ID produit invalide'),
-      quantity: z.number().int().positive('La quantité doit être positive'),
-    })
-  ).min(1, 'Au moins un produit est requis'),
-  deliveryType: z.enum(['delivery', 'pickup'], {
-    errorMap: () => ({ message: 'Type de livraison invalide' }),
-  }),
+  items: z
+    .array(
+      z.object({
+        productId: z.string().uuid("ID produit invalide"),
+        quantity: z.number().int().positive("La quantité doit être positive"),
+      }),
+    )
+    .min(1, "Au moins un produit est requis"),
+  deliveryType: z
+    .enum(["delivery", "pickup"])
+    .refine((v) => ["delivery", "pickup"].includes(v), {
+      message: "Type de livraison invalide",
+    }),
   deliveryAddress: z.string().optional(),
 });
 
 export const updateOrderStatusSchema = z.object({
-  status: z.enum(['pending', 'confirmed', 'preparing', 'ready', 'delivered', 'cancelled'], {
-    errorMap: () => ({ message: 'Statut invalide' }),
-  }),
+  status: z
+    .enum([
+      "pending",
+      "confirmed",
+      "preparing",
+      "ready",
+      "delivered",
+      "cancelled",
+    ])
+    .refine(
+      (v) =>
+        [
+          "pending",
+          "confirmed",
+          "preparing",
+          "ready",
+          "delivered",
+          "cancelled",
+        ].includes(v),
+      { message: "Statut invalide" },
+    ),
 });
 
 // Payment Validators

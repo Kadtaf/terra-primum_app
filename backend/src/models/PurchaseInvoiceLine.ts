@@ -12,6 +12,8 @@ export class PurchaseInvoiceLine extends Model {
     declare unitPriceHt: number | null;
     declare totalPriceHt: number | null;
     declare vatRate: number | null;
+    declare confidenceScore: number | null;
+    declare normalizedName: string | null;
 }
 
 PurchaseInvoiceLine.init(
@@ -78,11 +80,22 @@ PurchaseInvoiceLine.init(
             type: DataTypes.DECIMAL(4, 2),
             allowNull: true,
         },
+
+        confidenceScore: {
+            type: DataTypes.DECIMAL(4,3),
+            allowNull: true,
+        },
+
+        normalizedName: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
     },
     {
         sequelize,
         modelName: "PurchaseInvoiceLine",
         tableName: "purchase_invoice_lines",
+        timestamps: true,
     },
 );
 

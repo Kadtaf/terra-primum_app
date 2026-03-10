@@ -14,6 +14,8 @@ import { detectSupplierFromOcr } from "../utils/detectSupplierFormOcr";
 import { Op } from "sequelize";
 import { applyInvoiceToStock } from "../services/stockService";
 import { applyInvoiceToStockByIngredient } from "../services/stockService";
+import { matchIngredient } from "../utils/matchIngredient"; 
+import { normalizeLabel, guessUnit } from "../utils/ocrHelpers"; 
 
 
 
@@ -322,114 +324,126 @@ router.delete("/:id", async (req: Request, res: Response) => {
 });
 
 
+// -------------------------------------------------------------
+// Conversion PDF → image (sécurisée)
+// -------------------------------------------------------------
 const convertPdfToImage = async (pdfPath: string): Promise<string> => {
-    const outputDir = path.dirname(pdfPath);
-    const outputPrefix = "page";
+    try {
+        const outputDir = path.dirname(pdfPath);
+        const outputPrefix = "page";
 
-    const options = {
+        const options = {
         format: "jpeg",
         out_dir: outputDir,
         out_prefix: outputPrefix,
-        page: 1, // première page
-    };
+        page: 1,
+        };
 
-    await pdf.convert(pdfPath, options);
+        await pdf.convert(pdfPath, options);
 
-    const imagePath = path.join(outputDir, `${outputPrefix}-1.jpg`);
-    return imagePath;
+        return path.join(outputDir, `${outputPrefix}-1.jpg`);
+    } catch (err) {
+        console.error("Erreur conversion PDF :", err);
+        throw new Error("Impossible de convertir le PDF en image");
+    }
 };
 
+// -------------------------------------------------------------
+// ROUTE PRINCIPALE OCR
+// -------------------------------------------------------------
 router.post("/ocr", async (req: Request, res: Response) => {
-        try {
-            const { fileUrl, supplierId } = req.body;
-        
-            if (!fileUrl) {
-                return res.status(400).json({ message: "fileUrl manquant" });
-            }
-        
-            // Chemin absolu du fichier uploadé
-            const absolutePath = path.join(__dirname, "../../", fileUrl);
-        
-            if (!fs.existsSync(absolutePath)) {
-                return res.status(404).json({ message: "Fichier introuvable" });
-            }
-        
-            let imagePath = absolutePath;
-        
-            // Si c'est un PDF → conversion en image
-            if (absolutePath.toLowerCase().endsWith(".pdf")) {
-                console.log("Conversion PDF → image...");
-                imagePath = await convertPdfToImage(absolutePath);
-                console.log("Image générée :", imagePath);
-            }
-        
-            // 1. OCR sur l'image
-            const result = await Tesseract.recognize(imagePath, "fra", {
-                logger: (m) => console.log(m),
-            });
-        
-            // 2. Nettoyage du texte OCR
-            const cleaned = cleanOcrText(result.data.text);
-        
-            // 3. Détection automatique du fournisseur (si non fourni)
-            let finalSupplierId: string | null = supplierId ?? null;
-        
-            if (!finalSupplierId) {
-                const detectedId = await detectSupplierFromOcr(cleaned);
-        
-                if (detectedId) {
-                finalSupplierId = detectedId;
-                } else {
-                const supplier = await Supplier.create({
-                    name: "Fournisseur inconnu",
-                });
-                finalSupplierId = supplier.id; // string
-                }
-            }
-        
-            // 4. Parsing universel
-            const parsed = parseOcrInvoice(cleaned);
-        
-            // 5. Création de la facture
-            const invoice = await PurchaseInvoice.create({
-                supplierId: finalSupplierId,               // string (UUID)
-                invoiceNumber: `OCR-${Date.now()}`,
-                invoiceDate: new Date(),                  // DATEONLY, Sequelize fera le cast
-                totalHt: parsed.totals.totalHt,
-                totalTtc: parsed.totals.totalTtc,
-                rawFileUrl: fileUrl,
-            });
-        
-            // 6. Création des lignes
-            const createdLines = await Promise.all(
-                parsed.lines.map((line) =>
-                PurchaseInvoiceLine.create({
-                    invoiceId: invoice.id,                       // string (UUID)
-                    productNameRaw: line.label.substring(0, 255),
-                    quantity: line.quantity ?? 1,                // fallback quantité
-                    unit: "unité",
-                    unitPriceHt: line.unitPrice,
-                    totalPriceHt: line.total,
-                    vatRate: 20,
-                })
-                )
-            );
+    try {
+        const { fileUrl, supplierId } = req.body;
 
-            // 7. Appliquer les entrées au stock (si des lignes ont productId)
-            await applyInvoiceToStock(invoice.id);
-        
-            // 8. Réponse API
-            return res.json({
-                invoice,
-                lines: createdLines,
-                raw: result.data.text,
-                cleaned,
-                parsed,
+        if (!fileUrl) {
+        return res.status(400).json({ message: "fileUrl manquant" });
+        }
+
+        const absolutePath = path.join(__dirname, "../../", fileUrl);
+
+        if (!fs.existsSync(absolutePath)) {
+        return res.status(404).json({ message: "Fichier introuvable" });
+        }
+
+        let imagePath = absolutePath;
+
+        // PDF → image
+        if (absolutePath.toLowerCase().endsWith(".pdf")) {
+        imagePath = await convertPdfToImage(absolutePath);
+        }
+
+        // OCR
+        const result = await Tesseract.recognize(imagePath, "fra", {
+        logger: (m) => console.log(m),
+        });
+
+        // Nettoyage
+        const cleaned = cleanOcrText(result.data.text);
+
+        // Détection fournisseur
+        let finalSupplierId: string | null = supplierId ?? null;
+
+        if (!finalSupplierId) {
+        const detectedId = await detectSupplierFromOcr(cleaned);
+
+        if (detectedId) {
+            finalSupplierId = detectedId;
+        } else {
+            const supplier = await Supplier.create({
+            name: "Fournisseur inconnu",
             });
-        } catch (error) {
+            finalSupplierId = supplier.id;
+        }
+        }
+
+        // Parsing
+        const parsed = parseOcrInvoice(cleaned);
+
+        // Création facture
+        const invoice = await PurchaseInvoice.create({
+        supplierId: finalSupplierId,
+        invoiceNumber: `OCR-${Date.now()}`,
+        invoiceDate: new Date(),
+        totalHt: parsed.totals.totalHt,
+        totalTtc: parsed.totals.totalTtc,
+        rawFileUrl: fileUrl,
+        status: "ocr_done",
+        });
+
+        // Création lignes
+        const createdLines = await Promise.all(
+        parsed.lines.map(async (line) => {
+            const ingredientId = await matchIngredient(line.label);
+
+            return PurchaseInvoiceLine.create({
+            invoiceId: invoice.id,
+            productNameRaw: line.label.substring(0, 255),
+            normalizedName: normalizeLabel(line.label),
+            quantity: line.quantity ?? 1,
+            unit: line.unit ?? guessUnit(line.label) ?? "unité",
+            unitPriceHt: line.unitPrice,
+            totalPriceHt: line.total,
+            vatRate: 20,
+            confidenceScore: line.confidence ?? null,
+            ingredientId,
+            });
+        }),
+        );
+
+        // PAS de mise à jour du stock ici 
+        // L’utilisateur doit valider d’abord dans le frontend
+
+        return res.json({
+        invoice,
+        lines: createdLines,
+        raw: result.data.text,
+        cleaned,
+        parsed,
+        });
+    } catch (error) {
         console.error("Erreur OCR :", error);
         return res.status(500).json({ message: "Erreur OCR" });
-        }
+    }
 });
 
 
@@ -471,6 +485,64 @@ router.post("/ocr-preview", async (req: Request, res: Response) => {
     }
 });
 
+/*
+* Pour chaque ligne vérifier qu'elle existe
+* mettre à jour les champs modifiés
+* recalculer normalizedName si le label change
+* vérifier que ingredientId est valide (si fourni)
+* mettre à jour la facture -> status="validated"
+*/
+router.post("/:id/validate-invoice", async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { lines } = req.body;
+
+        if (!lines || !Array.isArray(lines)) {
+        return res.status(400).json({ message: "Format des lignes invalide" });
+        }
+
+        // Vérifier que la facture existe
+        const invoice = await PurchaseInvoice.findByPk(id);
+        if (!invoice) {
+        return res.status(404).json({ message: "Facture introuvable" });
+        }
+
+        // Mise à jour des lignes
+        const updatedLines = [];
+
+        for (const line of lines) {
+        const existingLine = await PurchaseInvoiceLine.findByPk(line.id);
+
+        if (!existingLine) continue; // sécurité
+
+        await existingLine.update({
+            ingredientId: line.ingredientId ?? null,
+            quantity: line.quantity ?? existingLine.quantity,
+            unit: line.unit ?? existingLine.unit,
+            unitPriceHt: line.unitPriceHt ?? existingLine.unitPriceHt,
+            totalPriceHt: line.totalPriceHt ?? existingLine.totalPriceHt,
+            confidenceScore: 1.0, // validé par l’utilisateur
+        });
+
+        updatedLines.push(existingLine);
+        }
+
+        // Mettre à jour le statut de la facture
+        await invoice.update({ status: "validated" });
+
+        return res.json({
+        message: "Facture validée avec succès.",
+        invoice,
+        updatedLines,
+        });
+    } catch (error) {
+        console.error("Erreur validate-invoice :", error);
+        return res
+        .status(500)
+        .json({ message: "Erreur lors de la validation de la facture." });
+    }
+});
+
 // ROUTE DE DEBUG / ADMIN TECHNIQUE
 // Ne pas exposer en production : rejoue les entrées de stock d'une facture
 router.post("/:id/apply-stock", async (req: Request, res: Response) => {
@@ -491,6 +563,11 @@ router.post("/:id/apply-to-stock", async (req, res) => {
         const { id } = req.params;
 
         await applyInvoiceToStockByIngredient(id);
+
+        await PurchaseInvoice.update(
+        { status: "applied_to_stock" },
+        { where: { id } },
+        );
 
         return res.json({
         message: "Stock ingrédients mis à jour à partir de la facture.",

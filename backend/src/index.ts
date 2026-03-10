@@ -18,6 +18,7 @@ import adminCategoryRoutes from './routes/adminCategories';
 import publicRoutes from './routes/public';
 import purchaseInvoicesRouter from "./routes/purchaseInvoices";
 import stockRoutes from "./routes/stock";
+import ingredientRoutes from "./routes/ingredients";
 
 
 dotenv.config();
@@ -66,6 +67,7 @@ app.use("/api/public", publicRoutes);
 app.use("/api/purchase-invoices", purchaseInvoicesRouter);
 app.use("/uploads", express.static("uploads"));
 app.use("/api/stock", stockRoutes);
+app.use("/api/ingredients", ingredientRoutes);
 
 
 // Health check

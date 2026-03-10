@@ -10,6 +10,7 @@ export class PurchaseInvoice extends Model {
     declare totalTtc: number | null;
     declare currency: string;
     declare rawFileUrl: string | null;
+    declare status: string;
 }
 
 PurchaseInvoice.init(
@@ -55,11 +56,19 @@ PurchaseInvoice.init(
         type: DataTypes.STRING,
         allowNull: true, // PDF ou image uploadée
         },
+
+
+        status: {
+            type: DataTypes.ENUM("uploaded", "ocr_done", "parsed", "validated", "applied_to_stock"),
+            allowNull: false,
+            defaultValue: "uploaded",
+        },
     },
     {
         sequelize,
         modelName: "PurchaseInvoice",
         tableName: "purchase_invoices",
+        timestamps: true,
     },
 );
 

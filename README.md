@@ -2,7 +2,7 @@
 
 Application complète pour un restaurant rapide premium avec web, mobile et tableau de bord admin.
 
-## 📁 Structure du Projet
+## Structure du Projet
 
 ```
 local_en_mouvement_app/
@@ -13,7 +13,7 @@ local_en_mouvement_app/
 └── docs/                 # Documentation
 ```
 
-## 🚀 Démarrage Rapide
+## Démarrage Rapide
 
 ### 1. Backend
 
@@ -55,7 +55,7 @@ npm install
 npm start
 ```
 
-## 📋 Fonctionnalités
+## Fonctionnalités
 
 ### Client Web
 - ✅ Consultation du menu
@@ -82,7 +82,7 @@ npm start
 - ✅ Notifications push
 - ✅ Accès offline (cache)
 
-## 🔧 Stack Technologique
+##  Stack Technologique
 
 ### Backend
 - **Framework** : Express.js
@@ -104,7 +104,7 @@ npm start
 - **Navigation** : React Navigation
 - **UI** : React Native Paper
 
-## 📚 Documentation
+## Documentation
 
 - [Architecture](./docs/ARCHITECTURE.md)
 - [Backend README](./backend/README.md)
@@ -112,7 +112,7 @@ npm start
 - [Admin Dashboard README](./admin-dashboard/README.md)
 - [Mobile README](./mobile/README.md)
 
-## 🔐 Variables d'Environnement
+## Variables d'Environnement
 
 ### Backend (.env)
 ```
@@ -179,7 +179,7 @@ EXPO_PUBLIC_STRIPE_PUBLIC_KEY=pk_test_...
 - `GET /api/admin/settings` - Paramètres
 - `PUT /api/admin/settings` - Mettre à jour
 
-## 🚢 Déploiement
+## Déploiement
 
 ### Backend
 ```bash
@@ -218,7 +218,7 @@ eas build --platform ios
 eas build --platform android
 ```
 
-## 📊 Modèles de Données
+## Modèles de Données
 
 ### User
 - id, email, password, firstName, lastName, phone
@@ -263,7 +263,7 @@ Admin Dashboard
     └─ Génère des rapports
 ```
 
-## 🛠️ Développement
+## Développement
 
 ### Ajouter une nouvelle fonctionnalité
 
@@ -279,7 +279,7 @@ Admin Dashboard
 - Utiliser des composants fonctionnels
 - Documenter les fonctions complexes
 
-## 📝 Licences
+## Licences
 
 MIT
 

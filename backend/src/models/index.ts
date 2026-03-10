@@ -417,7 +417,7 @@ Product.hasMany(PurchaseInvoiceLine, {
 });
 PurchaseInvoiceLine.belongsTo(Product, {
   foreignKey: "productId",
-  as: "product",
+  as: "linkedProduct",
 });
 
 // Nouvelle relation (stock par ingrédient)
