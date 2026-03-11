@@ -47,3 +47,12 @@ Thumbs.db
 # Project-specific
 backend/.vscode/*
 backend/uploads
+
+# Vite / bundler caches
+.vite/
+web-client/.vite/
+web-client/node_modules/.vite/
+
+# Misc
+*.log.*
+
