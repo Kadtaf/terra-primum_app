@@ -61,7 +61,6 @@ function App() {
   const notif = useNotificationStore((s) => s.notif);
   const clearNotif = useNotificationStore((s) => s.clearNotif);
 
-
   return (
     <>
       {isLoading && <GlobalLoader />}
@@ -158,16 +157,16 @@ function App() {
               path="/admin/purchase-invoices/:id"
               element={<PurchaseInvoiceDetail />}
             />
+            <Route
+              path="/admin/purchase-invoices/ocr"
+              element={<PurchaseInvoiceOcrCreate />}
+            />
+            <Route
+              path="/admin/purchase-invoices/price-history"
+              element={<PriceHistoryPage />}
+            />
+            <Route path="/admin/stock" element={<AdminStockPage />} />
           </Route>
-          <Route
-            path="/admin/purchase-invoices/ocr"
-            element={<PurchaseInvoiceOcrCreate />}
-          />
-          <Route
-            path="/admin/purchase-invoices/price-history"
-            element={<PriceHistoryPage />}
-          />
-          <Route path="/admin/stock" element={<AdminStockPage />} />
 
           {/* 404 */}
           <Route path="*" element={<Navigate to="/" />} />

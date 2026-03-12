@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -10,8 +11,28 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Loader2, PlusCircle } from "lucide-react";
+
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
+import {
+    Loader2,
+    PlusCircle,
+    Trash2,
+    Download,
+    PackageCheck,
+} from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { StatusBadge } from "@/components/purchases/StatusBadge";
 
 interface Supplier {
     id: string;
@@ -23,36 +44,33 @@ interface InvoiceLine {
     productNameRaw: string;
     quantity: number;
     unit: string;
-    unitPriceHt: string | null;
-    totalPriceHt: string | null;
-    vatRate: string | null;
+    unitPriceHt: number | null;
+    totalPriceHt: number | null;
+    vatRate: number | null;
+    [key: string]: unknown;
 }
 
 interface PurchaseInvoice {
     id: string;
     invoiceNumber: string;
     invoiceDate: string;
-    totalHt: string | null;
-    totalTtc: string | null;
+    totalHt: number | null;
+    totalTtc: number | null;
     supplier: Supplier;
+    status: string;
+    fileUrl?: string;
     lines: InvoiceLine[];
 }
 
 export default function PurchaseInvoiceDetail() {
     const { id } = useParams();
+    const navigate = useNavigate();
+    const { toast } = useToast();
+
     const [invoice, setInvoice] = useState<PurchaseInvoice | null>(null);
     const [loading, setLoading] = useState(true);
 
-    const { toast } = useToast();
-
-    // Formulaire ajout ligne
-    const [productNameRaw, setProductNameRaw] = useState("");
-    const [quantity, setQuantity] = useState("");
-    const [unit, setUnit] = useState("");
-    const [unitPriceHt, setUnitPriceHt] = useState("");
-    const [vatRate, setVatRate] = useState("");
-
-    // Mode édition de la facture
+    // Edition
     const [isEditing, setIsEditing] = useState(false);
     const [suppliers, setSuppliers] = useState<Supplier[]>([]);
     const [editSupplierId, setEditSupplierId] = useState("");
@@ -61,22 +79,26 @@ export default function PurchaseInvoiceDetail() {
     const [editTotalHt, setEditTotalHt] = useState("");
     const [editTotalTtc, setEditTotalTtc] = useState("");
 
+    // Ajout ligne
+    const [productNameRaw, setProductNameRaw] = useState("");
+    const [quantity, setQuantity] = useState("");
+    const [unit, setUnit] = useState("");
+    const [unitPriceHt, setUnitPriceHt] = useState("");
+    const [vatRate, setVatRate] = useState("");
+
+    // Charger facture
     const fetchInvoice = async () => {
         try {
         const res = await fetch(`/api/purchase-invoices/${id}`);
         const data = await res.json();
         setInvoice(data);
 
-        // Init des champs d'édition
         if (data) {
             setEditSupplierId(data.supplier?.id ?? "");
             setEditInvoiceNumber(data.invoiceNumber ?? "");
-            // invoiceDate venant du backend est souvent "YYYY-MM-DD" déjà
-            setEditInvoiceDate(
-            data.invoiceDate ? data.invoiceDate.substring(0, 10) : "",
-            );
-            setEditTotalHt(data.totalHt ?? "");
-            setEditTotalTtc(data.totalTtc ?? "");
+            setEditInvoiceDate(data.invoiceDate?.substring(0, 10) ?? "");
+            setEditTotalHt(data.totalHt?.toString() ?? "");
+            setEditTotalTtc(data.totalTtc?.toString() ?? "");
         }
         } catch (error) {
         console.error("Erreur chargement facture :", error);
@@ -89,15 +111,13 @@ export default function PurchaseInvoiceDetail() {
         fetchInvoice();
     }, [id]);
 
-    // Charger la liste des fournisseurs pour le select en édition
+    // Charger fournisseurs
     useEffect(() => {
         const fetchSuppliers = async () => {
         try {
             const res = await fetch("/api/admin/suppliers");
             const data = await res.json();
-            if (Array.isArray(data)) {
-            setSuppliers(data);
-            }
+            if (Array.isArray(data)) setSuppliers(data);
         } catch (error) {
             console.error("Erreur chargement fournisseurs :", error);
         }
@@ -106,6 +126,7 @@ export default function PurchaseInvoiceDetail() {
         fetchSuppliers();
     }, []);
 
+    // Ajouter ligne
     const handleAddLine = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -116,7 +137,8 @@ export default function PurchaseInvoiceDetail() {
             quantity: parseFloat(quantity),
             unit,
             unitPriceHt: unitPriceHt ? parseFloat(unitPriceHt) : null,
-            totalPriceHt: unitPriceHt
+            totalPriceHt:
+                unitPriceHt && quantity
                 ? parseFloat(unitPriceHt) * parseFloat(quantity)
                 : null,
             vatRate: vatRate ? parseFloat(vatRate) : null,
@@ -138,10 +160,8 @@ export default function PurchaseInvoiceDetail() {
             description: "La ligne a été ajoutée avec succès.",
         });
 
-        // Recharger la facture
         fetchInvoice();
 
-        // Reset form
         setProductNameRaw("");
         setQuantity("");
         setUnit("");
@@ -156,6 +176,7 @@ export default function PurchaseInvoiceDetail() {
         }
     };
 
+    // Mise à jour facture
     const handleUpdateInvoice = async () => {
         if (!invoice) return;
 
@@ -172,9 +193,7 @@ export default function PurchaseInvoiceDetail() {
             }),
         });
 
-        if (!res.ok) {
-            throw new Error("Erreur mise à jour facture");
-        }
+        if (!res.ok) throw new Error("Erreur mise à jour facture");
 
         const updated = await res.json();
         setInvoice(updated);
@@ -182,13 +201,69 @@ export default function PurchaseInvoiceDetail() {
 
         toast({
             title: "Facture mise à jour",
-            description: "Les informations de la facture ont été mises à jour.",
+            description: "Les informations ont été mises à jour.",
         });
         } catch (error) {
-        console.error(error);
         toast({
             title: "Erreur",
             description: "Impossible de mettre à jour la facture.",
+            variant: "destructive",
+        });
+        }
+    };
+
+    // Appliquer au stock
+    const handleApplyStock = async () => {
+        if (!invoice) return;
+
+        try {
+        const res = await fetch(
+            `/api/purchase-invoices/${invoice.id}/apply-to-stock`,
+            {
+            method: "POST",
+            },
+        );
+
+        if (!res.ok) throw new Error("Erreur mise à jour stock");
+
+        toast({
+            title: "Stock mis à jour",
+            description: "Les ingrédients ont été mis à jour.",
+        });
+
+        fetchInvoice();
+        } catch (error) {
+        toast({
+            title: "Erreur",
+            description: "Impossible d'appliquer au stock.",
+            variant: "destructive",
+        });
+        }
+    };
+
+    // Supprimer facture
+    const handleDelete = async () => {
+        if (!invoice) return;
+
+        try {
+        const res = await fetch(`/api/purchase-invoices/${invoice.id}`, {
+            method: "DELETE",
+        });
+
+        if (!res.ok && res.status !== 204) {
+            throw new Error("Erreur suppression");
+        }
+
+        toast({
+            title: "Facture supprimée",
+            description: "La facture a été supprimée avec succès.",
+        });
+
+        navigate("/admin/purchase-invoices");
+        } catch (error) {
+        toast({
+            title: "Erreur",
+            description: "Impossible de supprimer la facture.",
             variant: "destructive",
         });
         }
@@ -208,12 +283,97 @@ export default function PurchaseInvoiceDetail() {
 
     return (
         <div className="p-6 space-y-6">
-        <h1 className="text-3xl font-bold">Facture {invoice.invoiceNumber}</h1>
+        <div className="flex justify-between items-center">
+            <h1 className="text-3xl font-bold">Facture {invoice.invoiceNumber}</h1>
+
+            <div className="flex gap-3">
+            {/* Télécharger PDF */}
+            {invoice.fileUrl && (
+                <Button
+                variant="outline"
+                onClick={() => window.open(invoice.fileUrl!, "_blank")}
+                >
+                <Download className="mr-2 h-4 w-4" />
+                Télécharger PDF
+                </Button>
+            )}
+
+            {/* Appliquer au stock */}
+            {invoice.status === "VALIDATED" && (
+                <Button
+                className="bg-green-600 text-white"
+                onClick={handleApplyStock}
+                >
+                <PackageCheck className="mr-2 h-4 w-4" />
+                Appliquer au stock
+                </Button>
+            )}
+
+            {/* Supprimer */}
+            <AlertDialog>
+                <AlertDialogTrigger asChild>
+                <Button variant="destructive">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Supprimer
+                </Button>
+                </AlertDialogTrigger>
+
+                <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Supprimer cette facture ?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                    Cette action est irréversible.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Annuler</AlertDialogCancel>
+                    <AlertDialogAction
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                    onClick={handleDelete}
+                    >
+                    Confirmer
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+            </div>
+        </div>
+
+        {/* Résumé premium */}
+        <Card>
+            <CardHeader>
+            <CardTitle>Résumé</CardTitle>
+            </CardHeader>
+
+            <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+                <p className="text-sm text-muted-foreground">Fournisseur</p>
+                <p className="font-medium">{invoice.supplier.name}</p>
+            </div>
+
+            <div>
+                <p className="text-sm text-muted-foreground">Total HT</p>
+                <p className="font-medium">{invoice.totalHt ?? "-"}</p>
+            </div>
+
+            <div>
+                <p className="text-sm text-muted-foreground">Total TTC</p>
+                <p className="font-medium">{invoice.totalTtc ?? "-"}</p>
+            </div>
+
+            <div>
+                <p className="text-sm text-muted-foreground">Statut</p>
+                <StatusBadge status={invoice.status} />
+            </div>
+            </CardContent>
+        </Card>
 
         {/* Informations facture */}
         <Card>
             <CardHeader className="flex justify-between items-center">
             <CardTitle>Informations</CardTitle>
+
             <Button
                 variant="outline"
                 size="sm"
@@ -222,6 +382,7 @@ export default function PurchaseInvoiceDetail() {
                 {isEditing ? "Annuler" : "Modifier"}
             </Button>
             </CardHeader>
+
             <CardContent className="space-y-2">
             {isEditing ? (
                 <div className="space-y-3">
@@ -241,11 +402,9 @@ export default function PurchaseInvoiceDetail() {
                     </select>
                 </div>
 
-                {/* Numéro de facture */}
+                {/* Numéro */}
                 <div>
-                    <label className="block mb-1 font-medium">
-                    Numéro de facture
-                    </label>
+                    <label className="block mb-1 font-medium">Numéro</label>
                     <input
                     type="text"
                     className="w-full border rounded p-2"
@@ -277,6 +436,7 @@ export default function PurchaseInvoiceDetail() {
                         onChange={(e) => setEditTotalHt(e.target.value)}
                     />
                     </div>
+
                     <div>
                     <label className="block mb-1 font-medium">Total TTC</label>
                     <input
@@ -289,7 +449,12 @@ export default function PurchaseInvoiceDetail() {
                     </div>
                 </div>
 
-                <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={handleUpdateInvoice}>Enregistrer</Button>
+                <Button
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                    onClick={handleUpdateInvoice}
+                >
+                    Enregistrer
+                </Button>
                 </div>
             ) : (
                 <>
@@ -312,7 +477,7 @@ export default function PurchaseInvoiceDetail() {
 
         {/* Lignes facture */}
         <Card>
-            <CardHeader className="flex justify-between items-center">
+            <CardHeader>
             <CardTitle>Lignes de facture</CardTitle>
             </CardHeader>
 
