@@ -4,7 +4,7 @@ import Category from './Category';
 import Restaurant from './Restaurant';
 import PurchaseInvoice from "./PurchaseInvoice";
 import PurchaseInvoiceLine from "./PurchaseInvoiceLine";
-import Supplier from './supplier';
+import Supplier from "./Supplier";
 import StockItem from './StockItem';
 import Ingredient from './Ingredient';
 

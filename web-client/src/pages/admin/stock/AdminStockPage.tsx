@@ -91,7 +91,7 @@ export default function AdminStockPage() {
             <Button
                 variant="outline"
                 onClick={() => navigate("/admin")}
-                className="bg-black text-white border-black hover:bg-transparent hover:text-black md:ml-2"
+                className="bg-black text-white border-black hover:bg-amber-400 hover:text-black md:ml-2"
             >
                 Retour au dashboard
             </Button>

@@ -75,7 +75,7 @@ export default function Footer({ openingHours, orderedDays, daysFr }: FooterProp
         </div>
 
         <div className="text-center text-xs text-[var(--color-text-muted)] mt-12">
-            © {new Date().getFullYear()} Le Local en Mouvement — Tous droits réservés
+            © {new Date().getFullYear()} Terra-Delice — Tous droits réservés
         </div>
         </footer>
     );

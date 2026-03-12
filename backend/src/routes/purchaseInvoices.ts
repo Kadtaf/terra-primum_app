@@ -1,7 +1,7 @@
 import pdf from "pdf-poppler";
 import fs from "fs";
 import { Router, Request, Response, raw } from "express";
-import Supplier from "../models/supplier";
+import Supplier from "../models/Supplier";
 import PurchaseInvoice from "../models/PurchaseInvoice";
 import PurchaseInvoiceLine from "../models/PurchaseInvoiceLine";
 import { upload } from "../middleware/upload";

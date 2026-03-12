@@ -5,7 +5,7 @@ Application complète pour un restaurant rapide premium avec web, mobile et tabl
 ## Structure du Projet
 
 ```
-local_en_mouvement_app/
+Terra_app_complete_with_data/
 ├── backend/              # API REST (Node.js + Express + PostgreSQL)
 ├── web-client/           # Application web client (React)
 ├── admin-dashboard/      # Tableau de bord restaurant (React)
@@ -58,29 +58,29 @@ npm start
 ## Fonctionnalités
 
 ### Client Web
-- ✅ Consultation du menu
-- ✅ Panier et commande
-- ✅ Paiement Stripe
-- ✅ Suivi en temps réel
-- ✅ Historique des commandes
-- ✅ Points de fidélité
-- ✅ Profil utilisateur
-- ✅ Responsive design
+- Consultation du menu
+- Panier et commande
+- Paiement Stripe
+- Suivi en temps réel
+- Historique des commandes
+- Points de fidélité
+- Profil utilisateur
+- Responsive design
 
 ### Admin Dashboard
-- ✅ Gestion des commandes
-- ✅ Changement de statut
-- ✅ Gestion du menu
-- ✅ Rapports de ventes
-- ✅ Produits les plus vendus
-- ✅ Paramètres du restaurant
-- ✅ Graphiques et statistiques
+- Gestion des commandes
+- Changement de statut
+- Gestion du menu
+- Rapports de ventes
+- Produits les plus vendus
+- Paramètres du restaurant
+- Graphiques et statistiques
 
 ### Mobile
-- ✅ Toutes les fonctionnalités du web
-- ✅ Interface native
-- ✅ Notifications push
-- ✅ Accès offline (cache)
+- Toutes les fonctionnalités du web
+- Interface native
+- Notifications push
+- Accès offline (cache)
 
 ##  Stack Technologique
 
@@ -228,6 +228,21 @@ eas build --platform android
 - id, name, description, price, category
 - image, ingredients, allergens, available
 
+### Category
+- id, name, description
+
+### Ingredient
+- id, name, category, unit, vatRat
+
+### PurchaseInvoice
+- id, supplierId, nvoiceNumber, invoiceDat
+- totalHt, totalTtc, currency, rawFileUrl, status
+
+### PurchaceInvoiceLine
+- id, invoiceId, productId, ingredientId, productNameRaw
+- quantity, unit, unitPriceHt, totalPriceHt
+- vatRat, confidenceScore, normalizedName
+
 ### Order
 - id, userId, totalPrice, status, deliveryType
 - deliveryAddress, estimatedTime, createdAt
@@ -241,7 +256,13 @@ eas build --platform android
 ### RestaurantSettings
 - id, openingHours, closedDays, deliveryFee, minOrderAmount
 
-## 🔄 Flux de Données
+### StockItem
+- id, productId, ingredientId, quantity, reorderThreshold
+
+### Supplier
+- id, name, contactInfo
+
+## Flux de Données
 
 ```
 Client Web/Mobile
@@ -281,16 +302,16 @@ Admin Dashboard
 
 ## Licences
 
-MIT
+ak.taftaf
 
-## 👥 Support
+## Support
 
 Pour les questions ou problèmes :
 - Consulter la documentation respective
 - Vérifier les logs du serveur
 - Vérifier les variables d'environnement
 
-## 🎯 Roadmap
+## Roadmap
 
 - [ ] Authentification OAuth (Google, Apple)
 - [ ] Notifications push
@@ -301,8 +322,8 @@ Pour les questions ou problèmes :
 - [ ] Analytics avancées
 - [ ] Intégration avec systèmes de caisse
 
-## 📞 Contact
+## Contact
 
-Le Local en Mouvement
-Email: contact@local-en-mouvement.fr
+Terra-Delice
+Email: contact@terra-delice.fr
 Tél: +33 5 XX XX XX XX

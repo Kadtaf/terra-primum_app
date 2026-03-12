@@ -9,7 +9,7 @@ import {
   toggleUserStatus
 } from '../controllers/adminUserController';
 
-import Supplier from '../models/supplier';
+import Supplier from "../models/Supplier";
 
 const router: Router = express.Router();
 
