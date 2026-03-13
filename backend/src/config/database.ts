@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://postgres:PostgreRahma142&@localhost:5432/terra_app';
+const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://postgres:password@localhost:5432/DB_name';
 
 export const sequelize = new Sequelize(DATABASE_URL, {
   dialect: 'postgres',

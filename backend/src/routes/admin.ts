@@ -272,7 +272,7 @@ router.post('/settings/reset', authenticate, isAdmin, async (req, res) => {
 
 router.get(
   "/suppliers",
-  /* authenticate, isAdmin, */ async (req, res) => {
+    authenticate, isAdmin, async (req, res) => {
     try {
       const suppliers = await Supplier.findAll({
         attributes: ["id", "name"],
