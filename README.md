@@ -311,7 +311,7 @@ Pour les questions ou problèmes :
 - Vérifier les logs du serveur
 - Vérifier les variables d'environnement
 
-## Roadmap
+## Roadmap des idées d'évolution
 
 - [ ] Authentification OAuth (Google, Apple)
 - [ ] Notifications push
@@ -321,6 +321,12 @@ Pour les questions ou problèmes :
 - [ ] Programme d'affiliation
 - [ ] Analytics avancées
 - [ ] Intégration avec systèmes de caisse
+- [ ] Ecran d'inventaire physique(fin de mois) pour corriger le stock réel.
+- [ ] Analyse des écarts « stock théorique vs réel » (gaspillage, sur‑portion, vol).
+- [ ] Notifications d'alerte de rupture (UI + email).
+- [ ] Décrémenter automatiquement le stock d'ingrédients à chaque vente (au moins pour les ingrédients particuliers)
+- [ ] Analyse des écarts « stock théorique vs réel » (gaspillage, sur‑portion, vol).
+- [ ] Ajouter les fiches techniques (recettes) et lier les produits aux ingrédients;
 
 ## Contact
 

@@ -1,7 +1,7 @@
 {
   "name": "terra_app_complete_with_data-backend",
   "version": "1.0.0",
-  "description": "Backend API pour Le Local en Mouvement",
+  "description": "Backend API pour terra délice",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
